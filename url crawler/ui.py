@@ -16,8 +16,8 @@ def main():
         "Science Direct"
     ]
 
-    def begin(file,name,choice):
-        craw(file,name,choice)
+    def begin(file,name,choice,kw):
+        craw(file,name,choice,kw)
 
     root = Tk()
     root.config(height=300, width=600,background='white')
@@ -45,14 +45,19 @@ def main():
     keyText.grid(row=1, sticky=E)
     keyEntry.grid(row=1, column=1)
 
+    kwText = Label(group, text="Enter keyword : ")
+    kwEntry = Entry(group)
+    kwText.grid(row=2, sticky=E)
+    kwEntry.grid(row=2, column=1)
+
     nameText = Label(group, text="Enter file name : ")
     nameEntry = Entry(group)
-    nameText.grid(row=2, sticky=E)
-    nameEntry.grid(row=2, column=1)
+    nameText.grid(row=3, sticky=E)
+    nameEntry.grid(row=3, column=1)
 
 
     MyButton = Button(group, text="Submit", width=10,
-        command=lambda:begin(keyEntry.get(),nameEntry.get(),variable.get()))
+        command=lambda:begin(keyEntry.get(),nameEntry.get(),variable.get(),kwEntry.get()))
     MyButton.grid(columnspan=2)
 
     root.mainloop()

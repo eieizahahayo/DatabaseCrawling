@@ -5,6 +5,17 @@ from bs4 import BeautifulSoup as soup
 import datetime
 import re
 import xlsxwriter
+import pymongo
+from pymongo import MongoClient
+
+def connectDB():
+    MdbURI = "mongodb://a:a123456@ds125381.mlab.com:25381/crawlerdata"
+    client = MongoClient(MdbURI,connectTimeoutMS=30000)
+    db = client.get_database("crawlerdata")
+    return db.Wiley
+
+def pushRECORD(record,mycol):
+    mycol.insert_one(record)
 
 def checkCountry(text,country):
     check = True
@@ -17,7 +28,7 @@ def checkCountry(text,country):
     if(check):
         country.append(" ")
 
-def contact(input,f,n):
+def contact(input,link,title,journal,vol,date,doi,mycol,kw):
     print("enter contact")
     headers = {
         'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
@@ -25,13 +36,16 @@ def contact(input,f,n):
     page = soup(response.content, "html5lib")
     body = page.findAll("div",{"class":"accordion-tabbed__tab-mobile accordion__closed"})
     print(len(body))
+    authors = []
     for i in range(len(body) // 2):
+        name = ""
         email = []
+        email2 = []
         country = []
         affiliation = []
         #--------------Authors----------------------------------------------
         print("Author : " + body[i].a.span.text)
-        f.write('H' + str(n) , body[i].a.span.text)
+        name = body[i].a.span.text
         try:
             add = body[i].find("div",{"class":"author-info accordion-tabbed__content"})
             try:
@@ -45,10 +59,10 @@ def contact(input,f,n):
                         print("Found email in author : " + match.group(0))
             except Exception as e:
                 print("Exception address1 : " + str(e))
-                f.write('K' + str(n) , "Cannot get affiliation")
+                affiliation.append("Cannot get affiliation")
         except Exception as e:
             print("Exception address2 : " + str(e))
-            f.write('K' + str(n) , 'Cannot get affiliation')
+            affiliation.append("Cannot get affiliation")
 
         #--------------email 1----------------------------------------------
         print("Len email : " + str(len(email)))
@@ -70,11 +84,6 @@ def contact(input,f,n):
                 print("Enter if len(email)")
                 email.append("Cannot get email")
 
-        if(len(email) == 0):
-            f.write('I' + str(n) , 'Cannot get email')
-        else:
-            f.write('I' + str(n) , email[0])
-
         #--------------email 2----------------------------------------------
         try:
             text = page.find("div",{"class":"article-header__correspondence-to"})
@@ -82,58 +91,41 @@ def contact(input,f,n):
             if(match):
                 match = re.search("(( )*[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)", text.text)
                 if(match):
-                    f.write('J' + str(n) , match.group(0))
+                    email2.append(match.group(0))
                 else:
-                    f.write('J' + str(n) , 'Cannot get email')
+                    email2.append("Cannot get email")
             else:
-                f.write('J' + str(n) , 'Cannot get email')
+                email2.append("Cannot get email")
         except Exception as e:
             print("Exception email2 : " + str(e))
-            f.write('J' + str(n) , 'Cannot get email')
+            email2.append("Cannot get email")
         print("-----------------------------------------")
         #--------------Country and affiliation----------------------------------------------
         for each in affiliation:
             checkCountry(each,country)
-        try:
-            for i in range(0,len(affiliation)):
-                f.write('K' + str(n) , affiliation[i])
-                f.write('L' + str(n) , country[i])
-                print("Affiliation : " + affiliation[i])
-                print("Country : " + country[i])
-                n += 1
-        except Exception as e:
-            print("Exception country : " + str(e))
-        n += 1
-    return n
+        info = {
+            "name" : name,
+            "email" : email,
+            "email2" : email2,
+            "affiliation" : affiliation,
+            "country" : country
+        }
+        authors.append(info)
+    record = {
+        "keyword" : kw,
+        "link" : "https://onlinelibrary.wiley.com" + link,
+        "title" : title,
+        "journal" : journal,
+        "vol" : vol,
+        "date" : date,
+        "doi" : "https://nph.onlinelibrary.wiley.com" + doi,
+        "authors" : authors
+    }
+    pushRECORD(record,mycol)
 
 #-------------------------------------------------Wiley------------------------------------------------------------------------------
-def wiley(input,name):
-    filename = "Wiley_" + name + ".xlsx"
-    filepath = "wiley/csv/" + filename
-    now = datetime.datetime.now()
-    workbook = xlsxwriter.Workbook(filepath)
-    f = workbook.add_worksheet()
-    f.write('A1', 'Keyword : ')
-    f.write('B1', input)
-    f.write('A2', 'Database : ')
-    f.write('B2', 'https://onlinelibrary.wiley.com/')
-    f.write('A3', 'Date : ')
-    f.write('B3', str(now.isoformat()))
-    count = 1
-    n = 4
-    f.write('A' + str(n) , 'S.No')
-    f.write('B' + str(n) , 'Website')
-    f.write('C' + str(n) , 'Title')
-    f.write('D' + str(n) , 'Journal name')
-    f.write('E' + str(n) , 'Volume')
-    f.write('F' + str(n) , 'Date')
-    f.write('G' + str(n) , 'Doi number')
-    f.write('H' + str(n) , 'Author name')
-    f.write('I' + str(n) , 'E-mail by method1')
-    f.write('J' + str(n) , 'E-mail by method2')
-    f.write('K' + str(n) , 'Affiliation')
-    f.write('L' + str(n) , 'Country')
-    n += 1
+def wiley(input,name,kw):
+    mycol = connectDB()
     for i in range(0,999999):
         print("Page : " + str(i))
         stop = True
@@ -150,49 +142,35 @@ def wiley(input,name):
                 info = each.find("div",{"class":"meta__info"})
                 date = info.find("span",{"class":"meta__epubDate"}).text
                 doi = each.h2.span.a['href']
-
                 #-------------------Initialization--------------------------------------------------------
                 print("link : " + link)
-                f.write('A' + str(n) , str(count))
-                f.write('B' + str(n) , 'https://onlinelibrary.wiley.com' + link)
-
                 #--------------Title----------------------------------------------
                 print("Title : " + title)
-                f.write('C' + str(n) , title)
-
                 #--------------Journal----------------------------------------------
                 journal = info.find("a",{"class":"meta__serial"}).text
                 print("Journal : " + journal)
-                f.write('D' + str(n) , journal)
                 try:
                     vol = info.find("a",{"class":"meta__volume"}).text
                     print("Volume : " + vol)
-                    f.write('E' + str(n) , vol)
                 except Exception as e:
+                    vol = "Cannot get volume"
                     print("Exception volume : " + str(e))
-                    f.write('E' + str(n) , 'Cannot get volume')
                 #--------------Date----------------------------------------------
                 try:
                     print("Date : " + date)
-                    f.write('F' + str(n) , date)
                 except Exception as e:
                     print("Exception date : " + str(e))
-                    f.write('F' + str(n) , 'Cannot get date')
 
                 #--------------Doi----------------------------------------------
                 try:
                     print("Doi : https://nph.onlinelibrary.wiley.com" + doi)
-                    f.write('G' + str(n) , 'https://nph.onlinelibrary.wiley.com' + doi)
                 except Exception as e:
                     print("Exception doi : " + str(e))
-                    f.write('G' + str(n) , 'Cannot get doi')
 
                 #--------------Authors and email----------------------------------------------
                 parse = "https://nph.onlinelibrary.wiley.com" + doi
-                n = contact(parse,f,n)
+                contact(parse,link,title,journal,vol,date,doi,mycol,kw)
                 print("-------------------------------------------")
-                count += 1
-                n += 1
                 stop = False
             if(stop):
                 break
@@ -201,4 +179,3 @@ def wiley(input,name):
                 print("Page : " + str(i))
                 break
     print("Jimmy")
-    workbook.close()
