@@ -4,53 +4,53 @@ from urllib.request import urlopen as uReq
 from bs4 import BeautifulSoup as soup
 import datetime
 import xlsxwriter
+import time
+import random
 
-#-----------------------------------------------ScienceDirect--------------------------------------------------------------------------------
-def scienceDirect(input,name):
-    filename = "scienceDirect_" + name + ".xlsx"
-    filepath = "scienceDirect/csv/" + filename
+def init(f,input):
     now = datetime.datetime.now()
-    workbook = xlsxwriter.Workbook(filepath)
-    f = workbook.add_worksheet()
     f.write('A1', 'Keyword : ')
     f.write('B1', input)
     f.write('A2', 'Database : ')
     f.write('B2', 'https://www.sciencedirect.com/')
     f.write('A3', 'Date : ')
     f.write('B3', str(now.isoformat()))
-    count = 1
-    n = 4
-    f.write('A' + str(n) , 'S.No')
-    f.write('B' + str(n) , 'Website')
-    f.write('C' + str(n) , 'Title')
-    f.write('D' + str(n) , 'Journal name')
-    f.write('E' + str(n) , 'Volume and date')
-    f.write('F' + str(n) , 'Keywords')
-    f.write('G' + str(n) , 'Doi number')
-    f.write('H' + str(n) , 'Author name')
-    f.write('I' + str(n) , 'Email')
-    f.write('K' + str(n) , 'Affiliation')
-    f.write('L' + str(n) , 'Country')
-    n += 1
+    f.write('A4' , 'S.No')
+    f.write('B4' , 'Website')
+    f.write('C4' , 'Title')
+    f.write('D4' , 'Journal name')
+    f.write('E4' , 'Volume and date')
+    f.write('F4' , 'Keywords')
+    f.write('G4' , 'Doi number')
+    f.write('H4' , 'Author name')
+    f.write('I4' , 'Email')
+    f.write('K4' , 'Affiliation')
+    f.write('L4' , 'Country')
+
+def crawling(input,f):
+    n = 5
     offset = 0
     count = 1
+    values = [5,30,35,40,45,50,55,60,120]
     for i in range(0,99999):
         try:
-            print("enter SD")
+            time.sleep(random.choice(values))
             headers = {
                 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
             breaker = False
-            print("------------------------------------------------------------------------")
             my_url = 'https://www.sciencedirect.com/search?qs=' + input.replace(" ","%20") + '&show=100&sortBy=relevance&offset=' + str(offset)
-            offset += 100
             response = requests.get(my_url, headers=headers)
             page = soup(response.content, "html5lib")
             body = page.findAll("a",{"class":"result-list-title-link u-font-serif text-s"})
             stop = body[0].text
             links = []
             checker = []
+            print("enter SD : " + str(offset))
+            print("URL : " + my_url)
+            print("------------------------------------------------------------------------")
             for each in body:
                 links.append(each['href'])
+                print(each['href'])
             for each in links:
                 print("try : " + each)
                 n = crawInfoScienceDirect(each,f,count,n)
@@ -58,12 +58,13 @@ def scienceDirect(input,name):
                 n += 1
         except Exception as e:
             print("Exception big : " + str(e))
-            break
+            if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+                print("Internet is down")
+                time.sleep(60)
+            else:
+                break
+        offset += 25
     print("-------------------------------------")
-    print(input)
-    workbook.close()
-
-
 
 def crawInfoScienceDirect(input,f,count,n):
     print("------------------------------------------------------------------------")
@@ -93,6 +94,9 @@ def crawInfoScienceDirect(input,f,count,n):
     except Exception as e:
         print("Exception title : " + str(e))
         f.write('C' + str(n) , 'Cannot get title')
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep(60)
     #---------------------------Journal---------------------------------------------------------
     try:
         findFieldStudy = [{"tag": "a", "className": {"class":"publication-title-link"}}, {"tag":"div", "className":{"class":"title"}}]
@@ -113,6 +117,9 @@ def crawInfoScienceDirect(input,f,count,n):
     except Exception as e:
         print("Exception journal : " + str(e))
         f.write('D' + str(n) , 'Cannot get journal')
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep(60)
 
     #---------------------------Detail---------------------------------------------------------
     ans = ""
@@ -124,6 +131,9 @@ def crawInfoScienceDirect(input,f,count,n):
     except Exception as e:
         print("Exception1 : " + str(e))
         f.write('E' + str(n) , 'Cannot get detail')
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep(60)
 
     try:
         vol = body.find("p",{"class":"specIssueTitle"}).text
@@ -133,6 +143,9 @@ def crawInfoScienceDirect(input,f,count,n):
     except Exception as e:
         print("Exception3 : " + str(e))
         f.write('E' + str(n) , 'Cannot get detail')
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep(60)
 
     try:
         detail = body.find("p",{"class":"volIssue"}).text
@@ -142,6 +155,9 @@ def crawInfoScienceDirect(input,f,count,n):
     except Exception as e:
         print("Exception2 : " + str(e))
         f.write('E' + str(n) , 'Cannot get detail')
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep(60)
 
     f.write('E' + str(n) , ans)
 
@@ -177,6 +193,9 @@ def crawInfoScienceDirect(input,f,count,n):
                     f.write('G' + str(n) , 'Cannot get DOI')
                 #-------------------------------------------------------------
         except Exception as e:
+            if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+                print("Internet is down")
+                time.sleep(60)
             continue
     if(alreadyDone == False):
         print("no keywords")
@@ -194,6 +213,9 @@ def crawInfoScienceDirect(input,f,count,n):
                 done = True
             except Exception as e:
                 print("except : " + str(e))
+                if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+                    print("Internet is down")
+                    time.sleep(60)
                 continue
         if(done == False):
             print("Cannot get DOI")
@@ -209,5 +231,21 @@ def crawInfoScienceDirect(input,f,count,n):
                 n += 1
         except Exception as e:
             print("Exception kw : " + str(e))
+            if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+                print("Internet is down")
+                time.sleep(60)
     print("-----------------------------------------------------------------")
     return n
+
+#-----------------------------------------------ScienceDirect--------------------------------------------------------------------------------
+def scienceDirect(input,name):
+    filename = "scienceDirect_" + name + ".xlsx"
+    filepath = "scienceDirect/csv/" + filename
+    workbook = xlsxwriter.Workbook(filepath)
+    f = workbook.add_worksheet()
+    init(f,input)
+    n = 5
+    offset = 0
+    count = 1
+    crawling(input,f)
+    workbook.close()

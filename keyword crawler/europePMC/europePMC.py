@@ -5,6 +5,27 @@ from bs4 import BeautifulSoup as soup
 import datetime
 import re
 import xlsxwriter
+import time
+import random
+
+def init(f,input):
+    now = datetime.datetime.now()
+    f.write('A1', 'Keyword : ')
+    f.write('B1', input)
+    f.write('A2', 'Database : ')
+    f.write('B2', 'https://europepmc.org/')
+    f.write('A3', 'Date : ')
+    f.write('B3', str(now.isoformat()))
+    f.write('A4' , 'S.No')
+    f.write('B4' , 'Website')
+    f.write('C4' , 'Title')
+    f.write('D4' , 'Journal name')
+    f.write('E4' , 'Date')
+    f.write('F4' , 'Doi number')
+    f.write('G4' , 'Author name')
+    f.write('H4' , 'E-mail')
+    f.write('I4' , 'Affiliation')
+    f.write('J4' , 'Country')
 
 def checkCountry(text):
     check = True
@@ -16,12 +37,54 @@ def checkCountry(text):
     if(check):
         return(" ")
 
+def crawling(input,f):
+    count = 1
+    n = 5
+    values = [5,30,35,40,45,50,55,60,120]
+    for i in range(1,999999):
+        try:
+            time.sleep(random.choice(values))
+            link = []
+            headers = {
+                'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
+            # my_url = 'https://europepmc.org/search?query=climate&page=1'
+            my_url = 'https://europepmc.org/search?query=' + input.replace(" ","+") + '&page=' + str(i)
+            response = requests.get(my_url, headers=headers)
+            page = soup(response.content, "html5lib")
+            body = page.findAll("a",{"class":"resultLink linkToAbstract"})
+            print("---------------------------------------------------------------")
+            print("Input : " + input)
+            print("URL : " + my_url)
+            print(len(body))
+            for each in body:
+                link.append("https://europepmc.org" + each['href'].replace(".",""))
+                print("link : https://europepmc.org" + each['href'].replace(".",""))
+                print("--------------------------------------------------------------")
+            print(len(link))
+            if(len(link) == 0):
+                break
+            for each in link:
+                n = crawInfo(each,f,count,n)
+                count += 1
+                n += 1
+        except Exception as e:
+            print("Exception big : " + str(e))
+            if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+                print("Internet is down")
+                time.sleep(60)
+            else:
+                break
 
 def crawInfo(input,f,count,n):
-    headers = {
-        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
-    response = requests.get(input, headers=headers)
-    page = soup(response.content, "html5lib")
+    try:
+        headers = {
+            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
+        response = requests.get(input, headers=headers)
+        page = soup(response.content, "html5lib")
+    except Exception as e:
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep(60)
 
     #------------initialization----------------------------------------------------------------
     print(input)
@@ -36,21 +99,27 @@ def crawInfo(input,f,count,n):
     except Exception as e:
         print("Exception title : " + str(e))
         f.write('C' + str(n) , 'Cannot get title')
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep(60)
 
     #------------Journal and date----------------------------------------------------------------
     try:
         div = page.find("div",{"class":"abs_link_metadata"})
         journalDiv = div.find("div",{"class":"abs_link_metadata"})
         journal = journalDiv.a.text
-        date = journalDiv.span.text
+        date = page.find("span",{"class":"abs_nonlink_metadata"})
         print("Journal : " + journal)
         f.write('D' + str(n) , journal)
-        print("Date : " + date)
-        f.write('E' + str(n) , date)
+        print("Date : " + date.text)
+        f.write('E' + str(n) , date.text)
     except Exception as e:
         print("Exception journal and date : " + str(e))
         f.write('D' + str(n) , 'Cannot get journal name')
         f.write('E' + str(n) , 'Cannot get date')
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep(60)
 
     #------------DOI----------------------------------------------------------------
     try:
@@ -62,6 +131,9 @@ def crawInfo(input,f,count,n):
     except Exception as e:
         print("Exception DOI : " + str(e))
         f.write('F' + str(n) , 'Cannot get doi number')
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep(60)
 
     #------------Authors and email----------------------------------------------------------------
     try:
@@ -87,66 +159,28 @@ def crawInfo(input,f,count,n):
             except Exception as e:
                 print("Exception email : " + str(e))
                 f.write('H' + str(n) , 'Cannot get email')
+                if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+                    print("Internet is down")
+                    time.sleep(60)
             n += 1
     except Exception as e:
         print("Exception Authors : " + str(e))
         f.write('G' + str(n) , 'Cannot get author name')
         n += 1
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep(60)
+    n += 1
     print("---------------------------------------------------------------------------------------")
     return n
 
 
 #-------------------------------------------------------------------------------------------------------------------------------
 def pmc(input,name):
-    now = datetime.datetime.now()
     filename = "europePMC_" + name + ".xlsx"
     filepath = "europePMC/csv/" + filename
     workbook = xlsxwriter.Workbook(filepath)
     f = workbook.add_worksheet()
-    f.write('A1', 'Keyword : ')
-    f.write('B1', input)
-    f.write('A2', 'Database : ')
-    f.write('B2', 'https://europepmc.org/')
-    f.write('A3', 'Date : ')
-    f.write('B3', str(now.isoformat()))
-    count = 1
-    n = 4
-    header = "S.No,Title,Journal name,Date,Doi number,Author name,E-mail,Affiliation\n"
-    f.write('A' + str(n) , 'S.No')
-    f.write('B' + str(n) , 'Website')
-    f.write('C' + str(n) , 'Title')
-    f.write('D' + str(n) , 'Journal name')
-    f.write('E' + str(n) , 'Date')
-    f.write('F' + str(n) , 'Doi number')
-    f.write('G' + str(n) , 'Author name')
-    f.write('H' + str(n) , 'E-mail')
-    f.write('I' + str(n) , 'Affiliation')
-    f.write('J' + str(n) , 'Country')
-    n += 1
-    for i in range(1,999999):
-        try:
-            link = []
-            headers = {
-                'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
-            # my_url = 'https://europepmc.org/search?query=climate&page=1'
-            my_url = 'https://europepmc.org/search?query=' + input.replace(" ","+") + '&page=' + str(i)
-            response = requests.get(my_url, headers=headers)
-            page = soup(response.content, "html5lib")
-            body = page.findAll("a",{"class":"resultLink linkToAbstract"})
-            print("---------------------------------------------------------------")
-            print("Input : " + input)
-            print("real : https://europepmc.org/search?query=climate&page=1")
-            print("URL : " + my_url)
-            print(len(body))
-            for each in body:
-                link.append("https://europepmc.org" + each['href'].replace(".",""))
-                print("link : https://europepmc.org" + each['href'].replace(".",""))
-                print("--------------------------------------------------------------")
-            for each in link:
-                n = crawInfo(each,f,count,n)
-                count += 1
-                n += 1
-        except Exception as e:
-            print("Exception big : " + str(e))
-            break
+    init(f,input)
+    crawling(input,f)
     workbook.close()
