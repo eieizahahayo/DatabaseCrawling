@@ -5,30 +5,13 @@ from bs4 import BeautifulSoup as soup
 import datetime
 import re
 import xlsxwriter
+import time
+import random
 
-
-def replace_all(text, wordDict):
-    for key in wordDict:
-        text = text.replace(key, wordDict[key])
-    return text
-
-
-#-------------------------------------------------arXiv------------------------------------------------------------------------------
-def arXiv(input,name):
-    filename = "arxiv_" + name + ".xlsx"
-    filepath = "arxiv/csv/" + filename
-    now = datetime.datetime.now()
-    workbook = xlsxwriter.Workbook(filepath)
-    f = workbook.add_worksheet()
-    f.write('A1', 'Keyword : ')
-    f.write('B1', input)
-    f.write('A2', 'Database : ')
-    f.write('B2', 'https://arxiv.org/')
-    f.write('A3', 'Date : ')
-    f.write('B3', str(now.isoformat()))
+def crawling(f,input):
     count = 1
-    n = 4
-
+    n = 5
+    values = [5,30,35,40,45,50,55,60,120]
     headers = {
         'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
     print("enter arXiv")
@@ -42,9 +25,9 @@ def arXiv(input,name):
             links.append(a['href'])
     for each in links:
         print("try : " + each)
+        time.sleep(random.choice(values))
         n = crawInfoArxiv(each,f,count,n)
         count +=1
-
     start = 50
     for i in range(2,999999):
         try:
@@ -67,10 +50,27 @@ def arXiv(input,name):
         except Exception as e:
             print("Exception : " + str(e))
             print("Exception page : " + str(i))
-            break
-    f.close()
+            if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+                print("Internet is down")
+                time.sleep( 60 )
+            else:
+                break
 
-
+def init(f,input):
+    f.write('A1', 'Keyword : ')
+    f.write('B1', input)
+    f.write('A2', 'Database : ')
+    f.write('B2', 'https://arxiv.org/')
+    f.write('A3', 'Date : ')
+    f.write('B3', str(now.isoformat()))
+    f.write('A4', 'S.No')
+    f.write('B4', 'Website')
+    f.write('C4', 'Title')
+    f.write('D4', 'Subject')
+    f.write('E4', 'Date')
+    f.write('F4', 'Ref')
+    f.write('G4', 'Doi number')
+    f.write('H4', 'Author name')
 
 def crawInfoArxiv(url,f,count,n):
     headers = {
@@ -81,18 +81,14 @@ def crawInfoArxiv(url,f,count,n):
     re = {"\n":" " , ",":" ","Title:":" ","Authors:":" "}
 
     #-------------------Initialization--------------------------------------------------------
-    f.write('A' + str(n) , url)
-    print("link : " + url)
-    n += 1
-    f.write('A' + str(n) , 'S.No')
-    f.write('B' + str(n) , 'Title')
-    f.write('C' + str(n) , 'Subject')
-    f.write('D' + str(n) , 'Date')
-    f.write('E' + str(n) , 'Ref')
-    f.write('F' + str(n) , 'Doi number')
-    f.write('G' + str(n) , 'Author name')
-    n += 1
-    f.write('A' + str(n) , str(count))
+    try:
+        print("link : " + url)
+        f.write('A' + str(n) , str(count))
+        f.write('B' + str(n) , url)
+    except Exception as e:
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep( 60 )
 
 
 
@@ -100,36 +96,48 @@ def crawInfoArxiv(url,f,count,n):
     try:
         title = body.find("h1",{"class":"title mathjax"})
         print("Title : " + replace_all(title.text,re))
-        f.write('B' + str(n) , title.text)
+        f.write('C' + str(n) , title.text)
     except Exception as e:
-        f.write('B' + str(n) , 'Cannot get title')
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep( 60 )
+        f.write('C' + str(n) , 'Cannot get title')
         print("Exception Title : " + str(e))
 
     #-------------------------Subject---------------------------------
     try:
         subj = body.find("span",{"class":"primary-subject"})
         print("Subject : " + replace_all(subj.text,re))
-        f.write('C' + str(n) , subj.text)
+        f.write('D' + str(n) , subj.text)
     except Exception as e:
-        f.write('C' + str(n) , 'Cannot get subject')
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep( 60 )
+        f.write('D' + str(n) , 'Cannot get subject')
         print("Exception Subject : " + str(e))
 
     #-------------------------Date---------------------------------
     try:
         date = body.find("div",{"class":"dateline"})
         print("Date : " + replace_all(date.text,re))
-        f.write('D' + str(n) , date.text)
+        f.write('E' + str(n) , date.text)
     except Exception as e:
-        f.write('D' + str(n) , 'Cannot get date')
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep( 60 )
+        f.write('E' + str(n) , 'Cannot get date')
         print("Exception Date : " + str(e))
 
     #-------------------------Ref---------------------------------
     try:
         ref = body.find("td",{"class":"tablecell jref"}).text
         print("Ref : " + replace_all(ref,re))
-        f.write('E' + str(n) , ref)
+        f.write('F' + str(n) , ref)
     except Exception as e:
-        f.write('E' + str(n) , 'Cannot get ref')
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep( 60 )
+        f.write('F' + str(n) , 'Cannot get ref')
         print("Exception ref : " + str(e))
 
     #-------------------------DOI---------------------------------
@@ -148,14 +156,20 @@ def crawInfoArxiv(url,f,count,n):
                 check = True
                 print("DOI True 1")
             except:
+                if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+                    print("Internet is down")
+                    time.sleep( 60 )
                 continue
     except Exception as e:
-        f.write('F' + str(n) , 'Cannot get doi')
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep( 60 )
+        f.write('G' + str(n) , 'Cannot get doi')
         check2 = True
         print("DOI True 2")
         print("Exception doi : " + str(e))
     if(check == False and check2 == False):
-        f.write('F' + str(n) , 'Cannot get doi')
+        f.write('G' + str(n) , 'Cannot get doi')
         print("Cannot get doi")
 
     #-------------------------Authors---------------------------------
@@ -164,11 +178,25 @@ def crawInfoArxiv(url,f,count,n):
         auts = divAut.findAll("a")
         for i in range(0,len(auts)):
             print("Authors : " + replace_all(auts[i].text,re))
-            f.write('G' + str(n) , auts[i].text)
+            f.write('H' + str(n) , auts[i].text)
             n += 1
     except Exception as e:
-        f.write('G' + str(n) , 'Cannot get authors')
+        if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+            print("Internet is down")
+            time.sleep( 60 )
+        f.write('H' + str(n) , 'Cannot get authors')
         print("Exception Authors : " + str(e))
 
     print("-------------------------------------------------------------------------------")
     return n
+
+#-------------------------------------------------arXiv------------------------------------------------------------------------------
+def arXiv(input,name):
+    filename = "arxiv_" + name + ".xlsx"
+    filepath = "arxiv/csv/" + filename
+    now = datetime.datetime.now()
+    workbook = xlsxwriter.Workbook(filepath)
+    f = workbook.add_worksheet()
+    init(f,input)
+    crawling(f,input)
+    workbook.close()

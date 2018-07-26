@@ -34,7 +34,6 @@ def crawling(input,f):
     values = [5,30,35,40,45,50,55,60,120]
     for i in range(0,99999):
         try:
-            time.sleep(random.choice(values))
             headers = {
                 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
             breaker = False
@@ -53,6 +52,7 @@ def crawling(input,f):
                 print(each['href'])
             for each in links:
                 print("try : " + each)
+                time.sleep(random.choice(values))
                 n = crawInfoScienceDirect(each,f,count,n)
                 count += 1
                 n += 1

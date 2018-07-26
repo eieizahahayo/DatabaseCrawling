@@ -35,7 +35,6 @@ def crawling(input,f):
     input = input.replace("&offset=0","")
     for i in range(0,99999):
         try:
-            time.sleep(random.choice(values))
             headers = {
                 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
             breaker = False
@@ -53,6 +52,7 @@ def crawling(input,f):
                 links.append(each['href'])
                 print(each['href'])
             for each in links:
+                time.sleep(random.choice(values))
                 print("try : " + each)
                 n = crawInfoScienceDirect(each,f,count,n)
                 count += 1

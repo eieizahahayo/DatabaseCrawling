@@ -45,7 +45,6 @@ def crawling(f,input,stop):
     stopYedKae = False
     values = [5,30,35,40,45,50,55,60,120]
     for i in range(0,999999):
-        time.sleep(random.choice(values))
         print("Page : " + str(i))
         try:
             headers = {
@@ -54,6 +53,9 @@ def crawling(f,input,stop):
             response = requests.get(my_url, headers=headers)
             page = soup(response.content, "html5lib")
             body = page.findAll("div",{"class":"item__body"})
+            if(len(body) == 0):
+                stopYedKae = True
+                break
             for each in body:
                 link = each.h2.span.a['href']
                 if(str(stop) == str(link) and i > 0):
@@ -111,6 +113,7 @@ def crawling(f,input,stop):
 
                 #--------------Authors and email----------------------------------------------
                 parse = "https://nph.onlinelibrary.wiley.com" + doi
+                time.sleep(random.choice(values))
                 n = contact(parse,f,n)
                 print("-------------------------------------------")
                 count += 1
@@ -162,7 +165,7 @@ def contact(input,f,n):
                 for each in allP:
                     print("Address : " + each.text)
                     affiliation.append(each.text)
-                    match = re.search("(( )*[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+)", each.text)
+                    match = re.search("(( )*[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-]+)", each.text)
                     if(match):
                         email.append(match.group(0))
                         print("Found email in author : " + match.group(0))
@@ -206,7 +209,7 @@ def contact(input,f,n):
             if(len(email) == 0):
                 f.write('I' + str(n) , 'Cannot get email')
             else:
-                f.write('I' + str(n) , email[0])
+                f.write('I' + str(n) , email[0].replace(" ",""))
         except Exception as e:
             if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
                 print("Internet is down")
@@ -219,7 +222,7 @@ def contact(input,f,n):
             if(match):
                 match = re.search("(( )*[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)", text.text)
                 if(match):
-                    f.write('J' + str(n) , match.group(0))
+                    f.write('J' + str(n) , match.group(0).replace(" ",""))
                 else:
                     f.write('J' + str(n) , 'Cannot get email')
             else:

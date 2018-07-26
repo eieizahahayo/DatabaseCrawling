@@ -44,7 +44,6 @@ def crawling(input,f):
     values = [5,30,35,40,45,50,55,60,120]
     for i in range(1,999999):
         try:
-            time.sleep(random.choice(values))
             link = []
             headers = {
                 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
@@ -65,6 +64,7 @@ def crawling(input,f):
             if(len(link) == 0):
                 break
             for each in link:
+                time.sleep(random.choice(values))
                 n = crawInfo(each,f,count,n)
                 count += 1
                 n += 1
@@ -150,10 +150,10 @@ def crawInfo(input,f,count,n):
             country = checkCountry(affi)
             f.write('J' + str(n) , country)
             try:
-                match = re.search("(( )[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", affi)
+                match = re.search("(( )[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$)", affi)
                 if (match):
                     print("Email : " + match.group(0))
-                    f.write('H' + str(n) , match.group(0))
+                    f.write('H' + str(n) , match.group(0).replace(" ",""))
                 else:
                     print("Cannot get email")
                     f.write('H' + str(n) , 'Cannot get email')
