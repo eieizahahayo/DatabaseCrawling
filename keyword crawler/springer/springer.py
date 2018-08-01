@@ -6,8 +6,10 @@ from bs4 import BeautifulSoup as soup
 import datetime
 import re
 import random
+import time
 
 def init(f,input):
+    now = datetime.datetime.now()
     f.write('A1', 'Keyword : ')
     f.write('B1', input)
     f.write('A2', 'Database : ')
@@ -243,7 +245,6 @@ def crawInfo(input,f,count,n):
 
 #-------------------------------------------------------------------------------------------------------------------------------
 def springer(input,name,first,last):
-    now = datetime.datetime.now()
     filename = "Springer_" + name + ".xlsx"
     filepath = "springer/csv/" + filename
     workbook = xlsxwriter.Workbook(filepath)
