@@ -7,14 +7,14 @@ from wiley.wiley import *
 from europePMC.europePMC import *
 from scienceDirect.scienceDirect import *
 
-def craw(key,name,choice):
+def craw(key,name,choice,first,last):
     print("start key", key)
     if(choice == "Wiley"):
-        wiley(key,name)
+        wiley(key,name,first,last)
     elif(choice == "Europe PMC"):
-        pmc(key,name)
+        pmc(key,name,first,last)
     elif(choice == "Science Direct"):
-        scienceDirect(key,name)
+        scienceDirect(key,name,first,last)
     # elif(choice == "5"):
     #     key = input("Enter the keyword : ")
     #     name = input("Enter file name : ")

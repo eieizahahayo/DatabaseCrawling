@@ -39,14 +39,14 @@ def init(f,input):
     f.write('L4' , 'Country')
     print("finished init")
 
-def crawling(f,input,stop):
+def crawling(f,input,stop,first,last):
     count = 1
     n = 5
     input = input.replace("&startPage=0","")
     values = [5,30,35,40,45,50,55,60,120]
     stopYedKae = False
-    for i in range(0,999999):
-        print("Page : " + str(i))
+    for i in range( int(first) - 1 , int(last) ):
+        print("Page : " + str(i+1))
         try:
             headers = {
                 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
@@ -254,13 +254,13 @@ def contact(input,f,n):
     return n
 
 #-------------------------------------------------Wiley------------------------------------------------------------------------------
-def wiley(input,name):
+def wiley(input,name,first,last):
     filename = "Wiley_" + name + ".xlsx"
     filepath = "wiley/csv/" + filename
     workbook = xlsxwriter.Workbook(filepath)
     f = workbook.add_worksheet()
     init(f,input)
     stop = checkStop(input)
-    crawling(f,input,stop)
+    crawling(f,input,stop,first,last)
     print("Jimmy")
     workbook.close()

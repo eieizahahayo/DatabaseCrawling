@@ -11,7 +11,7 @@ import time
 def checkStop(input):
     headers = {
         'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
-    my_url = input + '&startPage=0'
+    my_url = "https://onlinelibrary.wiley.com/action/doSearch?AllField=" + input.replace(" ","%20") + "&startPage=0&PubType=journal"
     response = requests.get(my_url, headers=headers)
     page = soup(response.content, "html5lib")
     body = page.findAll("div",{"class":"item__body"})
@@ -39,13 +39,13 @@ def init(f,input):
     f.write('L4' , 'Country')
     print("finished init")
 
-def crawling(f,input,stop):
+def crawling(f,input,stop,first,last):
     count = 1
     n = 5
     stopYedKae = False
     values = [5,30,35,40,45,50,55,60,120]
-    for i in range(0,999999):
-        print("Page : " + str(i))
+    for i in range( int(first)-1 , int(last)):
+        print("Page : " + str(i+1))
         try:
             headers = {
                 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
@@ -118,8 +118,6 @@ def crawling(f,input,stop):
                 print("-------------------------------------------")
                 count += 1
                 n += 1
-                if(stopYedKae):
-                    break
             if(stopYedKae):
                 break
         except Exception as e:
@@ -252,13 +250,13 @@ def contact(input,f,n):
     return n
 
 #-------------------------------------------------Wiley------------------------------------------------------------------------------
-def wiley(input,name):
+def wiley(input,name,first,last):
     filename = "Wiley_" + name + ".xlsx"
     filepath = "wiley/csv/" + filename
     workbook = xlsxwriter.Workbook(filepath)
     f = workbook.add_worksheet()
     init(f,input)
     stop = checkStop(input)
-    crawling(f,input,stop)
+    crawling(f,input,stop,first,last)
     print("Jimmy")
     workbook.close()

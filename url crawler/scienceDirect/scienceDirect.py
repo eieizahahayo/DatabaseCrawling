@@ -27,25 +27,24 @@ def init(f,input):
     f.write('K4' , 'Affiliation')
     f.write('L4' , 'Country')
 
-def crawling(input,f):
+def crawling(input,f,first,last):
     n = 5
-    offset = 0
     count = 1
     values = [5,30,35,40,45,50,55,60,120]
     input = input.replace("&offset=0","")
-    for i in range(0,99999):
+    for i in range( int(first) - 1 , int(last)):
         try:
             headers = {
                 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
             breaker = False
-            my_url = input + '&offset=' + str(offset)
+            my_url = input + '&offset=' + str(i*25)
             response = requests.get(my_url, headers=headers)
             page = soup(response.content, "html5lib")
             body = page.findAll("a",{"class":"result-list-title-link u-font-serif text-s"})
             stop = body[0].text
             links = []
             checker = []
-            print("enter SD : " + str(offset))
+            print("enter SD : " + str(i*25))
             print("URL : " + my_url)
             print("------------------------------------------------------------------------")
             for each in body:
@@ -64,7 +63,6 @@ def crawling(input,f):
                 time.sleep(60)
             else:
                 break
-        offset += 25
     print("-------------------------------------")
 
 def crawInfoScienceDirect(input,f,count,n):
@@ -239,7 +237,7 @@ def crawInfoScienceDirect(input,f,count,n):
     return n
 
 #-----------------------------------------------ScienceDirect--------------------------------------------------------------------------------
-def scienceDirect(input,name):
+def scienceDirect(input,name,first,last):
     filename = "scienceDirect_" + name + ".xlsx"
     filepath = "scienceDirect/csv/" + filename
     workbook = xlsxwriter.Workbook(filepath)
@@ -248,5 +246,5 @@ def scienceDirect(input,name):
     n = 5
     offset = 0
     count = 1
-    crawling(input,f)
+    crawling(input,f,first,last)
     workbook.close()

@@ -8,7 +8,7 @@ import xlsxwriter
 import time
 import random
 
-def crawling(f,input):
+def crawling(f,input,first,last):
     count = 1
     n = 5
     values = [5,30,35,40,45,50,55,60,120]
@@ -28,13 +28,12 @@ def crawling(f,input):
         time.sleep(random.choice(values))
         n = crawInfoArxiv(each,f,count,n)
         count +=1
-    start = 50
-    for i in range(2,999999):
+    for i in range(int(first)+1,int(last)):
         try:
             headers = {
                 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
             print("enter arXiv")
-            my_url = 'https://arxiv.org/search/?query=' + input.replace(" ","+") + '&searchtype=journal_ref&order=-announced_date_first&size=50&start=' + str(start)
+            my_url = 'https://arxiv.org/search/?query=' + input.replace(" ","+") + '&searchtype=journal_ref&order=-announced_date_first&size=50&start=' + str(i*50)
             response = requests.get(my_url, headers=headers)
             page = soup(response.content, "html5lib")
             body = page.findAll("a")
@@ -46,7 +45,6 @@ def crawling(f,input):
                 print("try : " + each)
                 n = crawInfoArxiv(each,f,count,n)
                 count +=1
-            start = start + 50
         except Exception as e:
             print("Exception : " + str(e))
             print("Exception page : " + str(i))
@@ -191,12 +189,12 @@ def crawInfoArxiv(url,f,count,n):
     return n
 
 #-------------------------------------------------arXiv------------------------------------------------------------------------------
-def arXiv(input,name):
+def arXiv(input,name,first,last):
     filename = "arxiv_" + name + ".xlsx"
     filepath = "arxiv/csv/" + filename
     now = datetime.datetime.now()
     workbook = xlsxwriter.Workbook(filepath)
     f = workbook.add_worksheet()
     init(f,input)
-    crawling(f,input)
+    crawling(f,input,first,last)
     workbook.close()

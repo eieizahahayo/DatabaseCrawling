@@ -27,11 +27,11 @@ def init(f,input):
     f.write('K4', 'Affiliation')
     f.write('L4', 'Country')
 
-def crawling(f,input):
+def crawling(f,input,first,last):
     count = 1
     n = 5
     values = [5,30,35,40,45,50,55,60,120]
-    for i in range(1,999999):
+    for i in range(int(first),int(last)+1):
         try:
             link = []
             headers = {
@@ -242,12 +242,12 @@ def crawInfo(input,f,count,n):
     return n
 
 #-------------------------------------------------------------------------------------------------------------------------------
-def springer(input,name):
+def springer(input,name,first,last):
     now = datetime.datetime.now()
     filename = "Springer_" + name + ".xlsx"
     filepath = "springer/csv/" + filename
     workbook = xlsxwriter.Workbook(filepath)
     f = workbook.add_worksheet()
     init(f,input)
-    crawling(f,input)
+    crawling(f,input,first,last)
     workbook.close()

@@ -37,12 +37,12 @@ def checkCountry(text):
     if(check):
         return(" ")
 
-def crawling(input,f):
+def crawling(input,f,first,last):
     count = 1
     n = 5
     input = input.replace("&page=1","")
     values = [5,30,35,40,45,50,55,60,120]
-    for i in range(1,999999):
+    for i in range(int(first) , int(last)+1):
         try:
             link = []
             headers = {
@@ -171,17 +171,16 @@ def crawInfo(input,f,count,n):
         if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
             print("Internet is down")
             time.sleep(60)
-    n += 1
     print("---------------------------------------------------------------------------------------")
     return n
 
 
 #-------------------------------------------------------------------------------------------------------------------------------
-def pmc(input,name):
+def pmc(input,name,first,last):
     filename = "europePMC_" + name + ".xlsx"
     filepath = "europePMC/csv/" + filename
     workbook = xlsxwriter.Workbook(filepath)
     f = workbook.add_worksheet()
     init(f,input)
-    crawling(input,f)
+    crawling(input,f,first,last)
     workbook.close()

@@ -8,18 +8,18 @@ from scienceDirect.scienceDirect import *
 from wiley.wiley import *
 from springer.springer import *
 from europePMC.europePMC import *
-def craw(key,name,choice):
+def craw(key,name,choice,first,last):
     print("start key", key)
     if(choice == "Wiley"):
         print("wiley key", key)
-        wiley(key,name)
+        wiley(key,name,first,last)
     elif(choice == "Springer"):
         print("springer key", key)
-        springer(key,name)
+        springer(key,name,first,last)
     elif(choice == "Europe PMC"):
         print("pmc key", key)
-        pmc(key,name)
+        pmc(key,name,first,last)
     elif(choice == "Science Direct"):
         scienceDirect(key,name)
     elif(choice == "arXiv"):
-        arXiv(key,name)
+        arXiv(key,name,first,last)
