@@ -43,7 +43,7 @@ def crawling(input,f,first,last):
             stop = body[0].text
             links = []
             checker = []
-            print("enter SD : " + str(offset))
+            print("enter SD : " + str(i*25))
             print("URL : " + my_url)
             print("------------------------------------------------------------------------")
             for each in body:

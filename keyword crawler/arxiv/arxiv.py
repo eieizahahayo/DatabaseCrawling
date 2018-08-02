@@ -55,6 +55,7 @@ def crawling(f,input,first,last):
                 break
 
 def init(f,input):
+    now = datetime.datetime.now()
     f.write('A1', 'Keyword : ')
     f.write('B1', input)
     f.write('A2', 'Database : ')
@@ -192,7 +193,6 @@ def crawInfoArxiv(url,f,count,n):
 def arXiv(input,name,first,last):
     filename = "arxiv_" + name + ".xlsx"
     filepath = "arxiv/csv/" + filename
-    now = datetime.datetime.now()
     workbook = xlsxwriter.Workbook(filepath)
     f = workbook.add_worksheet()
     init(f,input)

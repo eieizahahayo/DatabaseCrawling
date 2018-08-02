@@ -20,6 +20,6 @@ def craw(key,name,choice,first,last):
         print("pmc key", key)
         pmc(key,name,first,last)
     elif(choice == "Science Direct"):
-        scienceDirect(key,name)
+        scienceDirect(key,name,first,last)
     elif(choice == "arXiv"):
         arXiv(key,name,first,last)
