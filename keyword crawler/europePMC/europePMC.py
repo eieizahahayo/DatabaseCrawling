@@ -24,8 +24,9 @@ def init(f,input):
     f.write('F4' , 'Doi number')
     f.write('G4' , 'Author name')
     f.write('H4' , 'E-mail')
-    f.write('I4' , 'Affiliation')
-    f.write('J4' , 'Country')
+    f.write('I4' , 'E-mail2')
+    f.write('J4' , 'Affiliation')
+    f.write('K4' , 'Country')
 
 def checkCountry(text):
     check = True
@@ -145,11 +146,11 @@ def crawInfo(input,f,count,n):
             f.write('G' + str(n) , author)
             affi = each.find("span",{"class":"author-refine-subtitle"}).text
             print("Affiliation : " + affi)
-            f.write('I' + str(n) , affi)
+            f.write('J' + str(n) , affi)
             country = checkCountry(affi)
-            f.write('J' + str(n) , country)
+            f.write('K' + str(n) , country)
             try:
-                match = re.search("(( )[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$)", affi)
+                match = re.search("(( )*[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-]+)", affi)
                 if (match):
                     print("Email : " + match.group(0))
                     f.write('H' + str(n) , match.group(0).replace(" ",""))
@@ -159,6 +160,21 @@ def crawInfo(input,f,count,n):
             except Exception as e:
                 print("Exception email : " + str(e))
                 f.write('H' + str(n) , 'Cannot get email')
+                if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
+                    print("Internet is down")
+                    time.sleep(60)
+            try:
+                email2 = each.find("li",{"class":"author-refine-link-item"})
+                match2 = re.search("(( )*[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-]+)", email2.text)
+                if(match2):
+                    print("Email2 : " + match2.group(0))
+                    f.write('I' + str(n) , match.group(0).replace(" ",""))
+                else:
+                    print("Cannot get email2")
+                    f.write('I' + str(n), 'Cannot get email')
+            except Exception as e:
+                print("Exception email2 : " + str(e))
+                f.write('I' + str(n) , 'Cannot get email2')
                 if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
                     print("Internet is down")
                     time.sleep(60)

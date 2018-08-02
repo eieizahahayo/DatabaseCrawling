@@ -25,9 +25,10 @@ def init(f,input):
     f.write('G4', 'Keywords')
     f.write('H4', 'Doi number')
     f.write('I4', 'Author name')
-    f.write('J4', 'E-mail')
-    f.write('K4', 'Affiliation')
-    f.write('L4', 'Country')
+    f.write('J4', 'Affiliation number')
+    f.write('K4', 'E-mail')
+    f.write('L4', 'Affiliation')
+    f.write('M4', 'Country')
 
 def crawling(f,input,first,last):
     count = 1
@@ -50,7 +51,7 @@ def crawling(f,input,first,last):
                 link.append(each.h2.a['href'])
                 print("link : " + each.h2.a['href'])
             for each in link:
-                time.sleep(random.choice(values))
+                # time.sleep(random.choice(values))
                 n = crawInfo(each,f,count,n)
                 count += 1
                 n += 1
@@ -166,6 +167,7 @@ def crawInfo(input,f,count,n):
 
     #---------------------Authors and email 1------------------------------------------------------------------------------
     authorsArr = []
+    numArr = []
     mailArr = []
     try:
         count = 1
@@ -175,8 +177,9 @@ def crawInfo(input,f,count,n):
             if(len(each.text) > 1):
                 name = each.span.text
                 num = each.ul.text
-                print("Authors : " + name + " | " + num + ".")
-                authorsArr.append(name + " | " + num + ".")
+                print("Authors : " + name + " | " + num)
+                authorsArr.append(name)
+                numArr.append(num)
                 try:
                     mail = each.find("a",{"class":"gtm-email-author"})
                     print("Email : " + mail['title'])
@@ -194,6 +197,7 @@ def crawInfo(input,f,count,n):
             print("Internet is down")
             time.sleep( 60 )
         authorsArr.append("Cannot get author information")
+        numArr.append("Cannot get number")
         mailArr.append("Email is not available")
 
 
@@ -212,7 +216,7 @@ def crawInfo(input,f,count,n):
             time.sleep( 60 )
         affiArr.append("Cannot get affiliation")
 
-    maximum = max([len(keywords),len(authorsArr),len(mailArr)])
+    maximum = max([len(keywords),len(authorsArr),len(mailArr),len(numArr)])
     #------------------------Key words 2---------------------------------------------------------------------------
     kn = n
     for each in keywords:
@@ -224,18 +228,21 @@ def crawInfo(input,f,count,n):
     for each in authorsArr:
         f.write('I' + str(an) , each)
         an += 1
-
+    ann = n
+    for each in numArr:
+        f.write('J' + str(ann) , each)
+        ann += 1
     mn = n
     for each in mailArr:
-        f.write('J' + str(mn) , each.replace(" ",""))
+        f.write('K' + str(mn) , each.replace(" ",""))
         mn += 1
 
     #------------------------Affiliation 2 and country---------------------------------------------------------------------------
     afn = n
     for each in affiArr:
         country = checkCountry(each)
-        f.write('K' + str(afn) , each)
-        f.write('L' + str(afn) , country)
+        f.write('L' + str(afn) , each)
+        f.write('M' + str(afn) , country)
         afn += 1
 
     n += maximum
