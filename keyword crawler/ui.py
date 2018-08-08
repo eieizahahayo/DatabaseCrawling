@@ -14,8 +14,7 @@ def main():
         "Wiley",
         "Springer",
         "Europe PMC",
-        "Science Direct",
-        "arXiv"
+        "Science Direct"
     ]
 
     def begin(file,name,choice,first,last):

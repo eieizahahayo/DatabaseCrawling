@@ -9,31 +9,20 @@ import time
 import random
 
 def crawling(f,input,first,last):
+    print("Enter crawling function")
     count = 1
     n = 5
     values = [5,30,35,40,45,50,55,60,120]
     headers = {
         'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
-    print("enter arXiv")
-    my_url = 'https://arxiv.org/search/?query=' + input.replace(" ","+") + '&searchtype=journal_ref&order=-announced_date_first&size=50'
-    response = requests.get(my_url, headers=headers)
-    page = soup(response.content, "html5lib")
-    body = page.findAll("a")
-    links = []
-    for a in body:
-        if("arXiv:" in a.text):
-            links.append(a['href'])
-    for each in links:
-        print("try : " + each)
-        time.sleep(random.choice(values))
-        n = crawInfoArxiv(each,f,count,n)
-        count +=1
-    for i in range(int(first)+1,int(last)):
+    print("ready for loop : " + first + " , " + last)
+    for i in range(int(first),int(last)+1):
+        print("Enter loop")
         try:
-            headers = {
-                'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
             print("enter arXiv")
             my_url = 'https://arxiv.org/search/?query=' + input.replace(" ","+") + '&searchtype=journal_ref&order=-announced_date_first&size=50&start=' + str(i*50)
+            https://arxiv.org/search/?query=mango&searchtype=journal_ref&order=-announced_date_first&size=50&start=50
+            https://arxiv.org/search/?query=bird&searchtype=journal_ref&abstracts=show&order=-announced_date_first&size=50
             response = requests.get(my_url, headers=headers)
             page = soup(response.content, "html5lib")
             body = page.findAll("a")
@@ -41,6 +30,7 @@ def crawling(f,input,first,last):
             for a in body:
                 if("arXiv:" in a.text):
                     links.append(a['href'])
+            print(len(links))
             for each in links:
                 print("try : " + each)
                 n = crawInfoArxiv(each,f,count,n)
