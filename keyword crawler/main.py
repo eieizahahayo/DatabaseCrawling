@@ -3,7 +3,6 @@ import requests
 from urllib.request import urlopen as uReq
 from bs4 import BeautifulSoup as soup
 import datetime
-from arxiv.arxiv import *
 from scienceDirect.scienceDirect import *
 from wiley.wiley import *
 from springer.springer import *
@@ -21,5 +20,4 @@ def craw(key,name,choice,first,last):
         pmc(key,name,first,last)
     elif(choice == "Science Direct"):
         scienceDirect(key,name,first,last)
-    elif(choice == "arXiv"):
-        arXiv(key,name,first,last)
+
