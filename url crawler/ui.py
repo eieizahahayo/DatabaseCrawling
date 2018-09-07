@@ -13,7 +13,8 @@ def main():
     OPTIONS = [
         "Wiley",
         "Europe PMC",
-        "Science Direct"
+        "Science Direct",
+        "Springer"
     ]
 
     def begin(file,name,choice,first,last):
