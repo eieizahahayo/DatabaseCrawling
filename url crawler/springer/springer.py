@@ -112,7 +112,7 @@ def crawInfo(input,f,count,n):
         if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
             print("Internet is down")
             time.sleep( 60 )
-        f.write('D' + str(n) , jname.text)
+        f.write('D' + str(n) , 'Cannot get journal name')
 
     #--------------------------Volume-------------------------------------------------------------------------
     try:
@@ -217,35 +217,37 @@ def crawInfo(input,f,count,n):
             print("Internet is down")
             time.sleep( 60 )
         affiArr.append("Cannot get affiliation")
+    try:
+        maximum = max([len(keywords),len(authorsArr),len(mailArr),len(numArr)])
+        #------------------------Key words 2---------------------------------------------------------------------------
+        kn = n
+        for each in keywords:
+            f.write('G' + str(kn) , each.text)
+            kn += 1
 
-    maximum = max([len(keywords),len(authorsArr),len(mailArr),len(numArr)])
-    #------------------------Key words 2---------------------------------------------------------------------------
-    kn = n
-    for each in keywords:
-        f.write('G' + str(kn) , each.text)
-        kn += 1
+        #------------------------Author and mail 2---------------------------------------------------------------------------
+        an = n
+        for each in authorsArr:
+            f.write('I' + str(an) , each)
+            an += 1
+        ann = n
+        for each in numArr:
+            f.write('J' + str(ann) , each)
+            ann += 1
+        mn = n
+        for each in mailArr:
+            f.write('K' + str(mn) , each.replace(" ",""))
+            mn += 1
 
-    #------------------------Author and mail 2---------------------------------------------------------------------------
-    an = n
-    for each in authorsArr:
-        f.write('I' + str(an) , each)
-        an += 1
-    ann = n
-    for each in numArr:
-        f.write('J' + str(ann) , each)
-        ann += 1
-    mn = n
-    for each in mailArr:
-        f.write('K' + str(mn) , each.replace(" ",""))
-        mn += 1
-
-    #------------------------Affiliation 2 and country---------------------------------------------------------------------------
-    afn = n
-    for each in affiArr:
-        country = checkCountry(each)
-        f.write('L' + str(afn) , each)
-        f.write('M' + str(afn) , country)
-        afn += 1
+        #------------------------Affiliation 2 and country---------------------------------------------------------------------------
+        afn = n
+        for each in affiArr:
+            country = checkCountry(each)
+            f.write('L' + str(afn) , each)
+            f.write('M' + str(afn) , country)
+            afn += 1
+    except Exception as e:
+        print("Exception for : " + str(e))
 
     n += maximum
 

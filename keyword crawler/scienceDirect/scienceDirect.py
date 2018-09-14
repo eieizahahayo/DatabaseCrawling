@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup as soup
 import datetime
 import xlsxwriter
 import time
+import re
 import random
 
 def init(f,input):
@@ -51,7 +52,7 @@ def crawling(input,f,first,last):
                 print(each['href'])
             for each in links:
                 print("try : " + each)
-                time.sleep(random.choice(values))
+                # time.sleep(random.choice(values))
                 n = crawInfoScienceDirect(each,f,count,n)
                 count += 1
                 n += 1
@@ -62,7 +63,6 @@ def crawling(input,f,first,last):
                 time.sleep(60)
             else:
                 break
-        offset += 25
     print("-------------------------------------")
 
 def crawInfoScienceDirect(input,f,count,n):
@@ -160,7 +160,29 @@ def crawInfoScienceDirect(input,f,count,n):
 
     f.write('E' + str(n) , ans)
 
+    #---------------------------Authors + emails---------------------------------------------------------
+    auth_n = n
+    authors = body.findAll("span",{"class":"content"})
+    for ele in authors:
+        temp = ele.findAll("span")
+        name = temp[0].text
+        surname = temp[1].text
+        ans = name + " " + surname
+        f.write('H' + str(auth_n) , ans)
+        auth_n += 1
+
+    email_n = n
+    script_tag = body.find("script" ,{"type":"application/json"})
+    emails = re.findall("(( )*[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-]+)", str(script_tag))
+    ans = sorted(set(emails),key=emails.index)
+    for ele in ans:
+        f.write('I' + str(email_n) , str(ele[0]))
+        email_n += 1
+
+
+
     #---------------------------Key words---------------------------------------------------------
+    kw_n = n
     kwAns = []
     doi = ""
     findArr = [{"tag":"div","className":{"class":"keywords-section"}},{"tag":"ul","className":{"class":"keyword"}},{"tag":"div","className":{"class":"svKeywords"}}]
@@ -183,13 +205,13 @@ def crawInfoScienceDirect(input,f,count,n):
                             break
                         doi = body.find("a",ele)
                         print(doi.text)
-                        f.write('G' + str(n) , doi.text)
+                        f.write('G' + str(kw_n) , doi.text)
                         done = True
                     except:
                         continue
                 if(done == False):
                     print("Cannot get DOI")
-                    f.write('G' + str(n) , 'Cannot get DOI')
+                    f.write('G' + str(kw_n) , 'Cannot get DOI')
                 #-------------------------------------------------------------
         except Exception as e:
             if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
@@ -208,7 +230,7 @@ def crawInfoScienceDirect(input,f,count,n):
                     break
                 doi = body.find("a",ele)
                 print(doi.text)
-                f.write('G' + str(n) , doi.text)
+                f.write('G' + str(kw_n) , doi.text)
                 done = True
             except Exception as e:
                 print("except : " + str(e))
@@ -218,23 +240,28 @@ def crawInfoScienceDirect(input,f,count,n):
                 continue
         if(done == False):
             print("Cannot get DOI")
-            f.write('G' + str(n) , 'Cannot get DOI')
+            f.write('G' + str(kw_n) , 'Cannot get DOI')
         #-------------------------------------------------------------
         for each in kwAns:
-            f.write('F' + str(n) , each)
-            n += 1
+            f.write('F' + str(kw_n) , each)
+            kw_n += 1
     else:
         try:
             for each in kwAns:
-                f.write('F' + str(n) , each)
-                n += 1
+                f.write('F' + str(kw_n) , each)
+                kw_n += 1
         except Exception as e:
             print("Exception kw : " + str(e))
             if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
                 print("Internet is down")
                 time.sleep(60)
     print("-----------------------------------------------------------------")
+
+    n = max([auth_n,kw_n,email_n])
     return n
+
+    
+
 
 #-----------------------------------------------ScienceDirect--------------------------------------------------------------------------------
 def scienceDirect(input,name,first,last):
@@ -244,7 +271,7 @@ def scienceDirect(input,name,first,last):
     f = workbook.add_worksheet()
     init(f,input)
     n = 5
-    offset = 0
     count = 1
     crawling(input,f,first,last)
     workbook.close()
+
