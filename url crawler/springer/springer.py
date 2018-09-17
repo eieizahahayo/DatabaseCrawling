@@ -53,7 +53,7 @@ def crawling(f,input,first,last):
                 link.append(each.h2.a['href'])
                 print("link : " + each.h2.a['href'])
             for each in link:
-                # time.sleep(random.choice(values))
+                time.sleep(random.choice(values))
                 n = crawInfo(each,f,count,n)
                 count += 1
                 n += 1

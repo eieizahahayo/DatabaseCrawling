@@ -5,7 +5,117 @@ from bs4 import BeautifulSoup as soup
 import datetime
 import xlsxwriter
 import time
+import json
 import random
+
+
+def contactInfo(f,body,n):
+    authors = []
+    affs = []
+    counter = body.findAll("a",{"class":"author size-m workspace-trigger"})
+    emails = body.find("script" ,{"type":"application/json"})
+    data = json.loads(emails.text) #a dictionary!
+    content = data.get('authors').get('content')
+    for i in range(0, len(content)):
+        card = content[i].get('$$')
+        fucker = json.dumps(card,indent=3)
+        print(fucker)
+        for j in range(0, len(counter)):
+            outer = card[j].get('$$')
+            outer2 = json.dumps(outer,indent=3)
+            print(outer2)     
+            name = outer[0].get("_")
+            surname = outer[1].get("_")
+            realname = name + " " + surname
+            print("Name : " + realname)
+            if(len(outer) > 2):
+                try:
+                    email = outer[len(outer)-1].get("_")
+                    print("Email : " + email)
+                except Exception as e:
+                    print("Cannot get email")
+            else:
+                email = "None"
+                print("Email : " + email)
+            try:
+                temp = outer[2].get("$$")
+                id = temp[0].get("_")
+                print("id : " + id)
+            except Exception as e:
+                id = "not-match"
+                print("Id : " + id)
+                print("Exception : " + str(e))
+            authors.append({"name" : realname,"email" : email, "id" : id})
+            print("---------------------------------------------------------------")
+        print("*****************************************************************************************")
+        for j in range(len(counter),len(card)-1):
+            try:
+                outer = card[j].get('$$')
+                outer2 = json.dumps(outer,indent=3)
+                print(outer2)
+                if(len(outer) == 2):
+                    affi = outer[0].get("_")
+                    temp = outer[1].get("$$")
+                    country = temp[len(temp)-1].get("_")
+                    print("Affiliation : " + affi)
+                    print("Country : " + country)
+                elif(len(outer) > 2):
+                    try:
+                        print("First way")
+                        id = outer[0].get("_")
+                        affi = outer[1].get("_")
+                        temp = outer[2].get("$$")
+                        country = temp[len(temp)-1].get("_")
+                    except:
+                        print("Second way")
+                        id = outer[0].get("_")
+                        temp = outer[1].get("$$")
+                        affi = temp[0].get("_")
+                        temp2 = outer[2].get("$$")
+                        country = temp[len(temp)-1].get("_")
+                    print("Id : " + id)
+                    print("Affiliation : " + str(affi))
+                    print("Country : " + country)
+                    if str(affi).lower() == 'none':
+                        temp = outer[1].get("$$")
+                        affi = temp[0].get("_")
+                    print("---------------------------------------------------------------")
+                elif(len(outer) < 2):
+                    print("Oh my god you are so cool")
+                affs.append({"affi" : affi , "country" : country , "id" : id })
+            except Exception as e:
+                print("Exception : " + str(e))    
+        print("================================================================")
+    for ele in authors:
+        check = True
+        for ele2 in affs:
+            if(ele['id'] == ele2['id']):
+                check = False
+                print("-------------------------------------------")
+                print("Name : " + ele['name'])
+                f.write('H' + str(n) , ele['name'])
+                print("Email : " + str(ele['email']))
+                f.write('I' + str(n) , ele['email'])
+                print("Affiliation : " + str(ele2['affi']))
+                f.write('K' + str(n) , ele2['affi'])
+                print("Country : " + ele2['country'])
+                f.write('L' + str(n) , ele2['country'])
+                print("Id : " + ele['id'] + " = " + ele2['id'])
+                print("-------------------------------------------")
+                n += 1
+        if(check):
+            print("-------------------------------------------")
+            print("Name : " + ele['name'])
+            f.write('H' + str(n) , ele['name'])
+            print("Email : " + str(ele['email']))
+            f.write('I' + str(n) , ele['email'])
+            print("Affiliation : Cannot get affiliation")
+            f.write('K' + str(n) , 'Cannot get affiliation')
+            print("Country : Cannot get country")
+            f.write('L' + str(n) , 'Cannot get country')
+            print("-------------------------------------------")
+            n += 1
+    return n
 
 def init(f,input):
     now = datetime.datetime.now()
@@ -51,7 +161,7 @@ def crawling(input,f,first,last):
                 links.append(each['href'])
                 print(each['href'])
             for each in links:
-                time.sleep(random.choice(values))
+                # time.sleep(random.choice(values))
                 print("try : " + each)
                 n = crawInfoScienceDirect(each,f,count,n)
                 count += 1
@@ -160,7 +270,11 @@ def crawInfoScienceDirect(input,f,count,n):
 
     f.write('E' + str(n) , ans)
 
+    #---------------------------Authors + emails---------------------------------------------------------
+    auth_n = contactInfo(f,body,n)
+
     #---------------------------Key words---------------------------------------------------------
+    kw_n = n
     kwAns = []
     doi = ""
     findArr = [{"tag":"div","className":{"class":"keywords-section"}},{"tag":"ul","className":{"class":"keyword"}},{"tag":"div","className":{"class":"svKeywords"}}]
@@ -183,13 +297,13 @@ def crawInfoScienceDirect(input,f,count,n):
                             break
                         doi = body.find("a",ele)
                         print(doi.text)
-                        f.write('G' + str(n) , doi.text)
+                        f.write('G' + str(kw_n) , doi.text)
                         done = True
                     except:
                         continue
                 if(done == False):
                     print("Cannot get DOI")
-                    f.write('G' + str(n) , 'Cannot get DOI')
+                    f.write('G' + str(kw_n) , 'Cannot get DOI')
                 #-------------------------------------------------------------
         except Exception as e:
             if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
@@ -208,7 +322,7 @@ def crawInfoScienceDirect(input,f,count,n):
                     break
                 doi = body.find("a",ele)
                 print(doi.text)
-                f.write('G' + str(n) , doi.text)
+                f.write('G' + str(kw_n) , doi.text)
                 done = True
             except Exception as e:
                 print("except : " + str(e))
@@ -218,22 +332,24 @@ def crawInfoScienceDirect(input,f,count,n):
                 continue
         if(done == False):
             print("Cannot get DOI")
-            f.write('G' + str(n) , 'Cannot get DOI')
+            f.write('G' + str(kw_n) , 'Cannot get DOI')
         #-------------------------------------------------------------
         for each in kwAns:
-            f.write('F' + str(n) , each)
-            n += 1
+            f.write('F' + str(kw_n) , each)
+            kw_n += 1
     else:
         try:
             for each in kwAns:
-                f.write('F' + str(n) , each)
-                n += 1
+                f.write('F' + str(kw_n) , each)
+                kw_n += 1
         except Exception as e:
             print("Exception kw : " + str(e))
             if("Connection aborted." in str(e) or "HTTPSConnectionPool" in str(e) or "Connection broken:" in str(e)):
                 print("Internet is down")
                 time.sleep(60)
     print("-----------------------------------------------------------------")
+
+    n = max([auth_n,kw_n])
     return n
 
 #-----------------------------------------------ScienceDirect--------------------------------------------------------------------------------

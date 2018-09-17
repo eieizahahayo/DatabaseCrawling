@@ -48,61 +48,62 @@ def contactInfo(f,body,n):
                 print("Exception : " + str(e))
             authors.append({"name" : realname,"email" : email, "id" : id})
             print("---------------------------------------------------------------")
-    print("*****************************************************************************************")
-    for j in range(len(counter),len(card)-1):
-        try:
-            outer = card[j].get('$$')
-            outer2 = json.dumps(outer,indent=3)
-            print(outer2)
-            if(len(outer) == 2):
-                affi = outer[0].get("_")
-                temp = outer[1].get("$$")
-                country = temp[len(temp)-1].get("_")
-                print("Affiliation : " + affi)
-                print("Country : " + country)
-            elif(len(outer) > 2):
-                try:
-                    print("First way")
-                    id = outer[0].get("_")
-                    affi = outer[1].get("_")
-                    temp = outer[2].get("$$")
-                    country = temp[len(temp)-1].get("_")
-                except:
-                    print("Second way")
-                    id = outer[0].get("_")
+        print("*****************************************************************************************")
+        for j in range(len(counter),len(card)-1):
+            try:
+                outer = card[j].get('$$')
+                outer2 = json.dumps(outer,indent=3)
+                print(outer2)
+                if(len(outer) == 2):
+                    affi = outer[0].get("_")
                     temp = outer[1].get("$$")
-                    affi = temp[0].get("_")
-                    temp2 = outer[2].get("$$")
                     country = temp[len(temp)-1].get("_")
-                print("Id : " + id)
-                print("Affiliation : " + str(affi))
-                print("Country : " + country)
-                if str(affi).lower() == 'none':
-                    temp = outer[1].get("$$")
-                    affi = temp[0].get("_")
-                print("---------------------------------------------------------------")
-            elif(len(outer) < 2):
-                print("Oh my god you are so cool")
-            affs.append({"affi" : affi , "country" : country , "id" : id })
-        except Exception as e:
-            print("Exception : " + str(e))    
-    print("================================================================")
+                    print("Affiliation : " + affi)
+                    print("Country : " + country)
+                elif(len(outer) > 2):
+                    try:
+                        print("First way")
+                        id = outer[0].get("_")
+                        affi = outer[1].get("_")
+                        temp = outer[2].get("$$")
+                        country = temp[len(temp)-1].get("_")
+                    except:
+                        print("Second way")
+                        id = outer[0].get("_")
+                        temp = outer[1].get("$$")
+                        affi = temp[0].get("_")
+                        temp2 = outer[2].get("$$")
+                        country = temp[len(temp)-1].get("_")
+                    print("Id : " + id)
+                    print("Affiliation : " + str(affi))
+                    print("Country : " + country)
+                    if str(affi).lower() == 'none':
+                        temp = outer[1].get("$$")
+                        affi = temp[0].get("_")
+                    print("---------------------------------------------------------------")
+                elif(len(outer) < 2):
+                    print("Oh my god you are so cool")
+                affs.append({"affi" : affi , "country" : country , "id" : id })
+            except Exception as e:
+                print("Exception : " + str(e))    
+        print("================================================================")
     for ele in authors:
         check = True
         for ele2 in affs:
             if(ele['id'] == ele2['id']):
-            check = False
-            print("-------------------------------------------")
-            print("Name : " + ele['name'])
-            f.write('H' + str(n) , ele['name'])
-            print("Email : " + str(ele['email']))
-            f.write('I' + str(n) , ele['email'])
-            print("Affiliation : " + str(ele2['affi']))
-            f.write('K' + str(n) , ele['affi'])
-            print("Country : " + ele2['country'])
-            f.write('L' + str(n) , ele['country'])
-            print("Id : " + ele['id'] + " = " + ele2['id'])
-            print("-------------------------------------------")
+                check = False
+                print("-------------------------------------------")
+                print("Name : " + ele['name'])
+                f.write('H' + str(n) , ele['name'])
+                print("Email : " + str(ele['email']))
+                f.write('I' + str(n) , ele['email'])
+                print("Affiliation : " + str(ele2['affi']))
+                f.write('K' + str(n) , ele2['affi'])
+                print("Country : " + ele2['country'])
+                f.write('L' + str(n) , ele2['country'])
+                print("Id : " + ele['id'] + " = " + ele2['id'])
+                print("-------------------------------------------")
+                n += 1
         if(check):
             print("-------------------------------------------")
             print("Name : " + ele['name'])
@@ -114,6 +115,7 @@ def contactInfo(f,body,n):
             print("Country : Cannot get country")
             f.write('L' + str(n) , 'Cannot get country')
             print("-------------------------------------------")
+            n += 1
     return n
 
 def init(f,input):
@@ -347,7 +349,7 @@ def crawInfoScienceDirect(input,f,count,n):
                 time.sleep(60)
     print("-----------------------------------------------------------------")
 
-    n = max([auth_n,kw_n,email_n])
+    n = max([auth_n,kw_n])
     return n
 
     
