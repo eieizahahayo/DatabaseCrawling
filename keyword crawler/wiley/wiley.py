@@ -71,7 +71,7 @@ def crawling(f,input,stop,first,last):
                     print("Stoppppppppppppppppppppppppppppppppppppppppppppppppppppp")
                 title = each.h2.text
                 info = each.find("div",{"class":"meta__info"})
-                date = info.find("span",{"class":"meta__epubDate"}).text
+                date = info.find("p",{"class":"meta__epubDate"}).text
                 doi = each.h2.span.a['href']
 
                 #-------------------Initialization--------------------------------------------------------

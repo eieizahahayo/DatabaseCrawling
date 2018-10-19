@@ -23,10 +23,14 @@ def contactInfo(f,body,n):
         for j in range(0, len(counter)):
             outer = card[j].get('$$')
             outer2 = json.dumps(outer,indent=3)
-            print(outer2)     
-            name = outer[0].get("_")
-            surname = outer[1].get("_")
-            realname = name + " " + surname
+            print(outer2)    
+            try: 
+                name = outer[0].get("_")
+                surname = outer[1].get("_")
+                realname = name + " " + surname
+            except Exception as e:
+                print("Cannot get name")
+                realname = "Cannot get name"
             print("Name : " + realname)
             if(len(outer) > 2):
                 try:
@@ -161,7 +165,7 @@ def crawling(input,f,first,last):
                 links.append(each['href'])
                 print(each['href'])
             for each in links:
-                # time.sleep(random.choice(values))
+                time.sleep(random.choice(values))
                 print("try : " + each)
                 n = crawInfoScienceDirect(each,f,count,n)
                 count += 1
